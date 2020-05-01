@@ -1,0 +1,8 @@
+[mr_freeze]
+debug_log_file = debug.log
+
+[auth]
+enabled = 1
+users_file = users
+response_header = Icecast-auth-user: 1
+audit_log_file = audit.log
