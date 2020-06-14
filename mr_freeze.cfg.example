@@ -6,3 +6,11 @@ enabled = 1
 users_file = users
 response_header = Icecast-auth-user: 1
 audit_log_file = audit.log
+
+[stats]
+enabled = 1
+pg_host = "postgres"
+pg_user = "marks"
+pg_password = "no"
+pg_database = "mr_freeze"
+response_header = Icecast-auth-user: 1
