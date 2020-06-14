@@ -1,0 +1,6 @@
+users
+*.log
+mr_freeze.cfg
+.idea/
+__pycache__/
+venv/
