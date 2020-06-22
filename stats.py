@@ -11,14 +11,15 @@ logger = logging.getLogger("stats")
 conn: Optional[asyncpg.Connection] = None
 
 
-async def init():
+async def init() -> None:
     global conn
-    conn = await asyncpg.connect(
-        host=cfg.get("stats", "pg_host"),
-        user=cfg.get("stats", "pg_user"),
-        password=cfg.get("stats", "pg_password"),
-        database=cfg.get("stats", "pg_database")
-    )
+    if conn is None or conn.is_closed():
+        conn = await asyncpg.connect(
+            host=cfg.get("stats", "pg_host"),
+            user=cfg.get("stats", "pg_user"),
+            password=cfg.get("stats", "pg_password"),
+            database=cfg.get("stats", "pg_database")
+        )
 
 
 routes = RouteTableDef()
@@ -27,6 +28,7 @@ routes = RouteTableDef()
 @routes.post("/listener_add")
 async def listener_add(req: Request) -> Response:
     global conn
+    await init()
     params = await req.post()
     try:
         mount = params["mount"]
@@ -57,6 +59,7 @@ async def listener_add(req: Request) -> Response:
 @routes.post("/listener_remove")
 async def listener_remove(req: Request) -> Response:
     global conn
+    await init()
     params = await req.post()
     try:
         mount = params["mount"]
@@ -77,4 +80,4 @@ async def listener_remove(req: Request) -> Response:
         duration
     )
 
-    return Response(200)
+    return Response(status=200)
