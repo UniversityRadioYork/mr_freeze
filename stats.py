@@ -44,7 +44,7 @@ async def listener_add(req: Request) -> Response:
         # Note that the client ID can change between them - all the other parameters should be constant
         last_conn_id = await conn.fetchval(
             "SELECT listen_id FROM listens.listen "
-            "WHERE ip_address = $1 AND user_agent = $2 AND mount = $3 AND time_end < (NOW() - '3 seconds'::INTERVAL)",
+            "WHERE ip_address = $1 AND user_agent = $2 AND mount = $3 AND time_end > (NOW() - '3 seconds'::INTERVAL)",
             ip, agent, mount
         )
 
