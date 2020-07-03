@@ -14,3 +14,4 @@ pg_user = "marks"
 pg_password = "no"
 pg_database = "mr_freeze"
 response_header = Icecast-auth-user: 1
+min_listen_time = 3
