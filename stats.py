@@ -69,15 +69,25 @@ async def listener_remove(req: Request) -> Response:
         logger.error("Bad request - {}".format(repr(e)))
         return Response(status=400, text="Bad request", headers={"Icecast-Auth-Message": "bad_request"})
 
-    await conn.execute(
-        """
-        UPDATE listens.listen
-        SET time_end = time_start + ($3 || ' seconds')::INTERVAL
-        WHERE mount = $1 AND client_id = $2
-        """,
-        mount,
-        client,
-        duration
-    )
+    # Kill listens that were alive for only a few seconds
+    min_listen_time = float(cfg.get("stats", "min_listen_time"))
+
+    if float(duration) < min_listen_time:
+        await conn.execute(
+            "DELETE listens.listen WHERE mount = $1 AND client_id = $2",
+            mount,
+            client
+        )
+    else:
+        await conn.execute(
+            """
+            UPDATE listens.listen
+            SET time_end = time_start + ($3 || ' seconds')::INTERVAL
+            WHERE mount = $1 AND client_id = $2
+            """,
+            mount,
+            client,
+            duration
+        )
 
     return Response(status=200)
