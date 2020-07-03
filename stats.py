@@ -74,7 +74,7 @@ async def listener_remove(req: Request) -> Response:
 
     if float(duration) < min_listen_time:
         await conn.execute(
-            "DELETE listens.listen WHERE mount = $1 AND client_id = $2",
+            "DELETE FROM listens.listen WHERE mount = $1 AND client_id = $2",
             mount,
             client
         )
