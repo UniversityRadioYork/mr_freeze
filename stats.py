@@ -39,16 +39,31 @@ async def listener_add(req: Request) -> Response:
         logger.error("Bad request - {}".format(repr(e)))
         return Response(status=400, text="Bad request", headers={"Icecast-Auth-Message": "bad_request"})
 
-    await conn.execute(
-        """
-        INSERT INTO listens.listen (mount, client_id, ip_address, user_agent, time_start, time_end)
-        VALUES ($1, $2, $3::inet, $4, NOW(), NULL)
-        """,
-        mount,
-        client,
-        ip,
-        agent
-    )
+    async with conn.transaction():
+        # Check if Icecast closed a connection less than 3s ago - in that case don't create a fresh one
+        # Note that the client ID can change between them - all the other parameters should be constant
+        last_conn_id = await conn.fetchval(
+            "SELECT listen_id FROM listens.listen "
+            "WHERE ip_address = $1 AND user_agent = $2 AND mount = $3 AND time_end < (NOW() - '3 seconds'::INTERVAL)",
+            ip, agent, mount
+        )
+
+        if last_conn_id is None:
+            await conn.execute(
+                """
+                INSERT INTO listens.listen (mount, client_id, ip_address, user_agent, time_start, time_end)
+                VALUES ($1, $2, $3::inet, $4, NOW(), NULL)
+                """,
+                mount,
+                client,
+                ip,
+                agent
+            )
+        else:
+            await conn.execute(
+                "UPDATE listens.listen SET time_end = NULL WHERE listen_id = $1",
+                last_conn_id
+            )
 
     header_name, header_value = cfg.get("stats", "response_header").split(": ")
     return Response(status=200, headers={
