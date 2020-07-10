@@ -5,11 +5,11 @@ I'm a set of tools to make it easier to work with Icecast in production.
 Specifically, I can do
 
 * Source authentication
+* Listener statistics
 
 I can't yet do, but would like to do:
 
 * Auth against a database (currently just a local file
-* Listener statistics
 
 ## Installation
 
@@ -28,3 +28,7 @@ The format of the users file is as follows:
 ```
 <username>:<bcrypt-hash> attr=value attr2=value2
 ```
+
+### Listener Statistics
+
+TODO. Look at `mr_freeze.cfg.example` and `schema/0.sql`.
