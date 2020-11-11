@@ -35,9 +35,30 @@ async def listener_add(req: Request) -> Response:
         client = params["client"]
         ip = params["ip"]
         agent = params["agent"]
+        header_name, header_value = cfg.get("stats", "response_header").split(": ")
     except KeyError as e:
         logger.error("Bad request - {}".format(repr(e)))
         return Response(status=400, text="Bad request", headers={"Icecast-Auth-Message": "bad_request"})
+
+    # Check the allow/disallow lists
+    only_accept_from = []
+    if cfg.get("stats", "only_accept_from", fallback=None) is not None:
+        only_accept_from = [x.strip() for x in cfg.get("stats", "only_accept_from").split(",")]
+
+    ignore_from = []
+    if cfg.get("stats", "ignore_from", fallback=None) is not None:
+        ignore_from = [x.strip() for x in cfg.get("stats", "ignore_from".split(","))]
+
+    if len(only_accept_from) > 0:
+        if ip not in only_accept_from:
+            return Response(status=200, headers={
+                header_name: header_value
+            })
+
+    if ip in ignore_from:
+        return Response(status=200, headers={
+            header_name: header_value
+        })
 
     await conn.execute(
         """
@@ -50,7 +71,6 @@ async def listener_add(req: Request) -> Response:
         agent
     )
 
-    header_name, header_value = cfg.get("stats", "response_header").split(": ")
     return Response(status=200, headers={
         header_name: header_value
     })
