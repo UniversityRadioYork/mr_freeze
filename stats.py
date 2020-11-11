@@ -43,11 +43,11 @@ async def listener_add(req: Request) -> Response:
     # Check the allow/disallow lists
     only_accept_from = []
     if cfg.get("stats", "only_accept_from", fallback=None) is not None:
-        only_accept_from = [x.strip() for x in cfg.get("stats", "only_accept_from").split(",")]
+        only_accept_from = [x.strip() for x in cfg.get("stats", "only_accept_from", "").split(",")]
 
     ignore_from = []
     if cfg.get("stats", "ignore_from", fallback=None) is not None:
-        ignore_from = [x.strip() for x in cfg.get("stats", "ignore_from".split(","))]
+        ignore_from = [x.strip() for x in cfg.get("stats", "ignore_from", "").split(",")]
 
     if len(only_accept_from) > 0:
         if ip not in only_accept_from:
